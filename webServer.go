@@ -3,6 +3,7 @@ package webServer
 import (
 	"fmt"
 	"log"
+	"net"
 	"net/http"
 
 	"github.com/zuadi/webServer/models"
@@ -10,13 +11,15 @@ import (
 )
 
 type WebServer struct {
-	url    string
+	ip     string
+	port   int
 	router *router.Router
 }
 
 func NewWebServer(ip string, port int) *WebServer {
 	return &WebServer{
-		url:    fmt.Sprintf("%s:%d", ip, port),
+		ip:     ip,
+		port:   port,
 		router: router.NewRouter(),
 	}
 }
@@ -50,6 +53,13 @@ func (s *WebServer) WebSocket(path string, reviece func(data any)) {
 }
 
 func (s *WebServer) ListenHttp() error {
-	log.Printf("listens on: %s\n", s.url)
-	return http.ListenAndServe(s.url, s.router)
+	ln, err := net.Listen("tcp", fmt.Sprintf("%s:%d", s.ip, s.port))
+	if err != nil {
+		return err
+	}
+	// Extract the actual port
+	addr := ln.Addr().(*net.TCPAddr)
+
+	log.Printf("listens on: %s:%d\n", addr.IP.String(), addr.Port)
+	return http.Serve(ln, s.router)
 }
