@@ -21,25 +21,28 @@ func NewWebServer(ip string, port int) *WebServer {
 	}
 }
 
+func (s *WebServer) SetDefaultCORS() {
+	s.router.DefaultCORS()
+}
+
 func (s *WebServer) ServeFile(path, file string) {
 	s.router.ServeFile(path, file)
 }
 
 func (s *WebServer) ServeFileSystem(path, file string) {
-	fmt.Println(12)
 	s.router.ServeFileSystem(path, file)
 }
 
-func (s *WebServer) Group(name string) *models.Group {
-	return s.router.Group(name)
+func (s *WebServer) Group(path string) *models.Group {
+	return s.router.Group(path)
 }
 
-func (s *WebServer) Get(name string, handler models.Handler) {
-	s.router.Get(name, handler)
+func (s *WebServer) Get(path string, handler models.Handler) {
+	s.router.Get(path, handler)
 }
 
-func (s *WebServer) Post(name string, handler models.Handler) {
-	s.router.Post(name, handler)
+func (s *WebServer) Post(path string, handler models.Handler) {
+	s.router.Post(path, handler)
 }
 
 func (s *WebServer) ListenHttp() error {

@@ -4,11 +4,14 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/zuadi/webServer/logger"
 	"github.com/zuadi/webServer/models"
+	"github.com/zuadi/webServer/utils"
 )
 
 type Router struct {
 	route models.Route
+	cors  *CORSMiddleware
 }
 
 func NewRouter() *Router {
@@ -35,20 +38,45 @@ func (r *Router) ServeFileSystem(path, directory string) {
 
 func (r *Router) Group(path string) *models.Group {
 	return &models.Group{
-		Name:  cleanPath(path),
+		Path:  utils.CleanPath(path),
 		Route: &r.route,
 	}
 }
 
 func (r *Router) Get(path string, handler models.Handler) {
-	r.route.Insert("GET", cleanPath(path), handler)
+	title := "GET"
+	logger.SetStyle(title, "#56a7f8", path)
+	r.route.Insert(title, utils.CleanPath(path), handler)
 }
 
 func (r *Router) Post(path string, handler models.Handler) {
-	r.route.Insert("POST", cleanPath(path), handler)
+	title := "POST"
+	logger.SetStyle(title, "#56f8ba", path)
+	r.route.Insert(title, utils.CleanPath(path), handler)
 }
 
 func (r *Router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
+	origin := req.Header.Get("Origin")
+
+	for allowOrigin := range strings.SplitSeq(r.cors.allowOrigins, ",") {
+		allowOrigin = strings.TrimSpace(allowOrigin)
+
+		if allowOrigin == "*" || allowOrigin == origin {
+			w.Header().Set("Access-Control-Allow-Origin", origin)
+			break
+		}
+	}
+
+	w.Header().Set("Access-Control-Allow-Methods", r.cors.allowMethods)
+	w.Header().Set("Access-Control-Allow-Headers", r.cors.allowHeaders)
+	w.Header().Set("Access-Control-Allow-Private-Network", r.cors.allowPrivateNetwork)
+
+	if req.Method == "OPTIONS" {
+		logger.SetStyle("OPTIONS", "#43ecf8", req.URL.Path)
+		w.WriteHeader(http.StatusOK)
+		return
+	}
+
 	found, handler, params := r.route.Search(req.Method, req.URL.Path)
 
 	if !found || handler == nil {
@@ -61,11 +89,4 @@ func (r *Router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	ctx.SetParameters(params)
 	handler(ctx)
 
-}
-
-func cleanPath(p string) string {
-	if p == "/" {
-		return "/"
-	}
-	return "/" + strings.Trim(p, "/")
 }
