@@ -37,11 +37,12 @@ func (c *Context) GetParameter(key string) string {
 }
 
 func (c *Context) RespondString(s string) {
+	c.response.Header().Set("Content-Type", "text/plain")
 	c.response.Write([]byte(s))
 }
 
 func (c *Context) RespondJson(statusCode int, data any) {
-	c.response.Header().Set("Content-Type", "application/json")
+	c.response.Header().Set("Content-Type", "application/json; charset=utf-8")
 
 	c.response.WriteHeader(statusCode)
 
