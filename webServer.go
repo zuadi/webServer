@@ -45,6 +45,10 @@ func (s *WebServer) Post(path string, handler models.Handler) {
 	s.router.Post(path, handler)
 }
 
+func (s *WebServer) WebSocket(path string, reviece func(data any)) {
+	s.router.WebSocket(path, reviece)
+}
+
 func (s *WebServer) ListenHttp() error {
 	log.Printf("listens on: %s\n", s.url)
 	return http.ListenAndServe(s.url, s.router)

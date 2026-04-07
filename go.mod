@@ -5,6 +5,7 @@ go 1.26.1
 require (
 	github.com/charmbracelet/lipgloss v1.1.0
 	github.com/charmbracelet/log v1.0.0
+	github.com/gorilla/websocket v1.5.3
 )
 
 require (

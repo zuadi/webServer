@@ -124,7 +124,7 @@ func (n *Route) Search(method, path string) (bool, Handler, map[string]string) {
 			}
 		}
 	}
-	
+
 	handler, ok := curr.handlers[method]
 	return ok, handler, params
 }

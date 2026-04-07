@@ -24,6 +24,8 @@ func TestWebServer(t *testing.T) {
 	ws := webServer.NewWebServer("0.0.0.0", 4040)
 	ws.SetDefaultCORS()
 
+	ws.WebSocket("/ws", nil)
+
 	ws.Get("/test1", func(ctx models.Context) { ctx.RespondString("hello from test1") })
 	ws.Post("/test1", func(ctx models.Context) {
 		fmt.Println(123, ctx.GetRequest())
