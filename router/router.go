@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/zuadi/webServer.git/models"
+	"github.com/zuadi/webServer/models"
 )
 
 type Router struct {

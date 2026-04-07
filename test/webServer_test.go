@@ -6,8 +6,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/zuadi/webServer.git"
-	"github.com/zuadi/webServer.git/models"
+	"github.com/zuadi/webServer"
+	"github.com/zuadi/webServer/models"
 )
 
 func TestWebServer(t *testing.T) {
