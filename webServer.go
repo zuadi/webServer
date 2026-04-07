@@ -5,8 +5,8 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/zuadi/webServer.git/models"
-	"github.com/zuadi/webServer.git/router"
+	"github.com/zuadi/webServer/models"
+	"github.com/zuadi/webServer/router"
 )
 
 type WebServer struct {
