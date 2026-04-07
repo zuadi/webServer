@@ -1,32 +1,25 @@
 package models
 
 import (
-	"strings"
+	"github.com/zuadi/webServer/utils"
 )
 
 type Group struct {
-	Name  string
+	Path  string
 	Route *Route
 }
 
-func (g *Group) Group(name string) *Group {
-	name = strings.TrimPrefix(name, "/")
-	name = strings.TrimSuffix(name, "/")
-
+func (g *Group) Group(path string) *Group {
 	return &Group{
-		Name:  g.Name + "/" + name,
+		Path:  g.Path + "/" + utils.CleanPath(path),
 		Route: g.Route,
 	}
 }
 
-func (g *Group) Get(name string, handler Handler) {
-	name = strings.TrimPrefix(name, "/")
-	name = strings.TrimSuffix(name, "/")
-	g.Route.Insert("GET", g.Name+"/"+name, handler)
+func (g *Group) Get(path string, handler Handler) {
+	g.Route.Insert("GET", g.Path+"/"+utils.CleanPath(path), handler)
 }
 
-func (g *Group) Post(name string, handler Handler) {
-	name = strings.TrimPrefix(name, "/")
-	name = strings.TrimSuffix(name, "/")
-	g.Route.Insert("Post", g.Name+"/"+name, handler)
+func (g *Group) Post(path string, handler Handler) {
+	g.Route.Insert("Post", g.Path+"/"+utils.CleanPath(path), handler)
 }
