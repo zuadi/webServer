@@ -2,6 +2,7 @@ package test
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"testing"
 	"time"
@@ -21,8 +22,14 @@ func TestWebServer(t *testing.T) {
 	defer cancel()
 
 	ws := webServer.NewWebServer("0.0.0.0", 4040)
+	ws.SetDefaultCORS()
 
 	ws.Get("/test1", func(ctx models.Context) { ctx.RespondString("hello from test1") })
+	ws.Post("/test1", func(ctx models.Context) {
+		fmt.Println(123, ctx.GetRequest())
+		fmt.Println(124, ctx.GetRequest().Body)
+		ctx.RespondString("hello from test1")
+	})
 	ws.ServeFile("/testserver", "../mocks/index.html")
 	ws.ServeFileSystem("/getesten/*", "../models")
 
