@@ -5,8 +5,9 @@ import (
 	"net/http"
 	"testing"
 	"time"
-	"webServer"
-	"webServer/models"
+
+	"github.com/zuadi/webServer.git"
+	"github.com/zuadi/webServer.git/models"
 )
 
 func TestWebServer(t *testing.T) {
@@ -22,7 +23,7 @@ func TestWebServer(t *testing.T) {
 	ws := webServer.NewWebServer("0.0.0.0", 4040)
 
 	ws.Get("/test1", func(ctx models.Context) { ctx.RespondString("hello from test1") })
-	ws.ServeFile("/testserver", "../index.html")
+	ws.ServeFile("/testserver", "../mocks/index.html")
 	ws.ServeFileSystem("/getesten/*", "../models")
 
 	ws.Get("/test2", func(ctx models.Context) {

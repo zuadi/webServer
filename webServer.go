@@ -4,8 +4,9 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"webServer/models"
-	"webServer/router"
+
+	"github.com/zuadi/webServer.git/models"
+	"github.com/zuadi/webServer.git/router"
 )
 
 type WebServer struct {

@@ -3,7 +3,8 @@ package router
 import (
 	"net/http"
 	"strings"
-	"webServer/models"
+
+	"github.com/zuadi/webServer.git/models"
 )
 
 type Router struct {
