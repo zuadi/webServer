@@ -20,13 +20,13 @@ func (g *Group) Group(path string) *Group {
 func (g *Group) Get(path string, handler Handler) {
 	title := "GET"
 	path = utils.CleanPath(g.Path) + utils.CleanPath(path)
-	logger.SetStyle(title, "#56a7f8", path)
+	logger.DebugWithStyle(title, path)
 	g.Route.Insert(title, path, handler)
 }
 
 func (g *Group) Post(path string, handler Handler) {
 	title := "POST"
 	path = utils.CleanPath(g.Path) + utils.CleanPath(path)
-	logger.SetStyle(title, "#56f8ba", path)
+	logger.DebugWithStyle(title, path)
 	g.Route.Insert(title, path, handler)
 }

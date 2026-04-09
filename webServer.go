@@ -6,6 +6,7 @@ import (
 	"net"
 	"net/http"
 
+	logger "github.com/charmbracelet/log"
 	"github.com/zuadi/webServer/models"
 	"github.com/zuadi/webServer/router"
 )
@@ -22,6 +23,10 @@ func NewWebServer(ip string, port int) *WebServer {
 		port:   port,
 		router: router.NewRouter(),
 	}
+}
+
+func (s *WebServer) SetLogLevel(level logger.Level) {
+	logger.SetLevel(level)
 }
 
 func (s *WebServer) SetDefaultCORS() {

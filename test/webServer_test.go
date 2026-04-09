@@ -7,6 +7,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/charmbracelet/log"
 	"github.com/zuadi/webServer"
 	"github.com/zuadi/webServer/models"
 )
@@ -23,6 +24,7 @@ func TestWebServer(t *testing.T) {
 
 	ws := webServer.NewWebServer("localhost", 4040)
 	ws.SetDefaultCORS()
+	ws.SetLogLevel(log.DebugLevel)
 
 	ws.WebSocket("/ws", nil)
 
@@ -55,6 +57,7 @@ func TestWebServer(t *testing.T) {
 	//g.Get("/:id/23/hallo", func(w http.ResponseWriter, r *http.Request) { w.Write([]byte("Hjh")) })
 	g2 := g.Group("v1")
 	g2.Get("/:id/23/hallo", func(ctx models.Context) { ctx.RespondString("Hjh") })
+	g2.Post("/:id/23/hallo", func(ctx models.Context) { ctx.RespondString("Hjh") })
 
 	go func() {
 		for {

@@ -48,13 +48,13 @@ func (r *Router) Group(path string) *models.Group {
 
 func (r *Router) Get(path string, handler models.Handler) {
 	title := "GET"
-	logger.SetStyle(title, "#56a7f8", path)
+	logger.DebugWithStyle(title, path)
 	r.route.Insert(title, utils.CleanPath(path), handler)
 }
 
 func (r *Router) Post(path string, handler models.Handler) {
 	title := "POST"
-	logger.SetStyle(title, "#56f8ba", path)
+	logger.DebugWithStyle(title, path)
 	r.route.Insert(title, utils.CleanPath(path), handler)
 }
 
@@ -85,7 +85,7 @@ func (r *Router) WebSocket(path string, recieve func(data any)) {
 		req := ctx.GetRequest()
 		conn, err := upgrader.Upgrade(w, req, nil)
 		if err != nil {
-			logger.SetStyle("WS ERROR", "#ff0000", err.Error())
+			logger.ErrorWithStyle("WS ERROR", err.Error())
 			return
 		}
 
@@ -96,14 +96,14 @@ func (r *Router) WebSocket(path string, recieve func(data any)) {
 			conn.Close()
 		}()
 
-		logger.SetStyle("WS CONNECT", "#ff8800", req.RemoteAddr)
+		logger.DebugWithStyle("WS CONNECT", req.RemoteAddr)
 
 		// 2. The Event Loop (Keep the connection alive)
 		for {
 			// Read message from browser
 			messageType, p, err := conn.ReadMessage()
 			if err != nil {
-				logger.SetStyle("WS DISCONNECT", "#ff8800", err.Error())
+				logger.DebugWithStyle("WS DISCONNECT", err.Error())
 				return
 			}
 
@@ -116,7 +116,7 @@ func (r *Router) WebSocket(path string, recieve func(data any)) {
 		}
 	}
 
-	logger.SetStyle("WS", "#ff8800", path)
+	logger.DebugWithStyle("WS", path)
 	r.route.Insert("GET", cleanPath, handler)
 }
 
@@ -127,7 +127,7 @@ func (r *Router) Broadcast(path string, messageType int, data []byte) {
 		// Write the message to this specific connection
 		err := conn.WriteMessage(messageType, data)
 		if err != nil {
-			logger.SetStyle("WS ERR", "#ff0000", "Failed to send to one client")
+			logger.ErrorWithStyle("WS ERR", "failed to send to one client")
 			conn.Close()
 			r.connections.Delete(conn)
 		}
@@ -152,7 +152,7 @@ func (r *Router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	w.Header().Set("Access-Control-Allow-Private-Network", r.cors.allowPrivateNetwork)
 
 	if req.Method == "OPTIONS" {
-		logger.SetStyle("OPTIONS", "#43ecf8", req.URL.Path)
+		logger.DebugWithStyle("OPTIONS", req.URL.Path)
 		w.WriteHeader(http.StatusOK)
 		return
 	}
@@ -167,6 +167,7 @@ func (r *Router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	ctx.SetRequest(req)
 	ctx.SetResponseWriter(w)
 	ctx.SetParameters(params)
+	logger.DebugWithStyle(req.Method, req.URL.Path)
 	handler(ctx)
 
 }
