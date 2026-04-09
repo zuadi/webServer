@@ -23,7 +23,7 @@ func TestWebServer(t *testing.T) {
 	defer cancel()
 
 	ws := webServer.NewWebServer("localhost", 4040)
-	ws.SetDefaultCORS()
+
 	ws.SetLogLevel(log.DebugLevel)
 
 	ws.WebSocket("/ws", nil)

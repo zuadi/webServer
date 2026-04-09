@@ -7,6 +7,7 @@ import (
 	"net/http"
 
 	logger "github.com/charmbracelet/log"
+	logging "github.com/zuadi/webServer/logger"
 	"github.com/zuadi/webServer/models"
 	"github.com/zuadi/webServer/router"
 )
@@ -27,6 +28,7 @@ func NewWebServer(ip string, port int) *WebServer {
 
 func (s *WebServer) SetLogLevel(level logger.Level) {
 	logger.SetLevel(level)
+	logging.DebugWithStyle("NEW ROUTER", "Debug Mode active")
 }
 
 func (s *WebServer) SetDefaultCORS() {
@@ -58,6 +60,7 @@ func (s *WebServer) WebSocket(path string, reviece func(data any)) {
 }
 
 func (s *WebServer) ListenHttp() error {
+	s.router.CheckCors()
 	ln, err := net.Listen("tcp", fmt.Sprintf("%s:%d", s.ip, s.port))
 	if err != nil {
 		return err
