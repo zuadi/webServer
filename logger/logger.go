@@ -13,12 +13,12 @@ func InfoWithStyle(title, logEntry string) {
 
 func WarningWithStyle(title, logEntry string) {
 	setStyle(title)
-	logger.Warn(logEntry)
+	logger.Info(logEntry)
 }
 
 func ErrorWithStyle(title, logEntry string) {
 	setStyle("ERROR")
-	logger.Error(logEntry)
+	logger.Info(logEntry)
 }
 
 func DebugWithStyle(title, logEntry string) {

@@ -112,7 +112,7 @@ func (r *Router) WebSocket(path string, recieve func(data any)) {
 				recieve(p)
 			}
 
-			r.Broadcast(cleanPath, messageType, p)
+			r.Broadcast(cleanPath, messageType, p, conn)
 		}
 	}
 
@@ -120,10 +120,13 @@ func (r *Router) WebSocket(path string, recieve func(data any)) {
 	r.route.Insert("GET", cleanPath, handler)
 }
 
-func (r *Router) Broadcast(path string, messageType int, data []byte) {
+func (r *Router) Broadcast(path string, messageType int, data []byte, sender *websocket.Conn) {
 	r.connections.Range(func(key, value any) bool {
 		conn := key.(*websocket.Conn)
 
+		if conn == sender {
+			return true
+		}
 		// Write the message to this specific connection
 		err := conn.WriteMessage(messageType, data)
 		if err != nil {
