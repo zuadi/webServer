@@ -27,6 +27,6 @@ func (g *Group) Get(path string, handler Handler) {
 func (g *Group) Post(path string, handler Handler) {
 	title := "POST"
 	path = utils.CleanPath(g.Path) + utils.CleanPath(path)
-	logger.SetStyle(title, "#56a7f8", path)
+	logger.SetStyle(title, "#56f8ba", path)
 	g.Route.Insert(title, path, handler)
 }
