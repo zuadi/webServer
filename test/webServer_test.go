@@ -30,8 +30,8 @@ func TestWebServer(t *testing.T) {
 
 	ws.Get("/test1", func(ctx models.Context) { ctx.RespondString("hello from test1") })
 	ws.Post("/test1", func(ctx models.Context) {
-		fmt.Println(123, ctx.GetRequest())
-		fmt.Println(124, ctx.GetRequest().Body)
+		fmt.Println(ctx.GetRequest())
+		fmt.Println(ctx.GetRequest().Body)
 		ctx.RespondString("hello from test1")
 	})
 	ws.ServeFile("/testserver", "../mocks/index.html")
