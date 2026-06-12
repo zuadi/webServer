@@ -56,6 +56,11 @@ func (n *Route) Insert(method, path string, handler Handler) {
 			break
 		}
 	}
+
+	if curr.handlers == nil {
+		curr.handlers = make(map[string]Handler)
+	}
+
 	curr.handlers[method] = handler
 }
 
