@@ -1,11 +1,10 @@
 module github.com/zuadi/webServer
 
-go 1.26.1
+go 1.26.3
 
 require (
 	github.com/charmbracelet/lipgloss v1.1.0
 	github.com/charmbracelet/log v1.0.0
-	github.com/google/uuid v1.6.0
 	github.com/gorilla/websocket v1.5.3
 )
 
