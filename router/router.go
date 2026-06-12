@@ -22,11 +22,21 @@ func NewRouter() *Router {
 }
 
 func (r *Router) ServeFile(path, file string) {
-	r.route.Insert("GET", path, func(ctx models.Context) {
+	title := "GET"
+	logger.DebugWithStyle(title+" File", path)
+
+	r.route.Insert(title, path, func(ctx models.Context) {
+		logger.DebugWithStyle(title+" File", path)
 		http.ServeFile(ctx.GetResponseWriter(), ctx.GetRequest(), file)
 	})
 }
 
+/*
+serves file system specified in directory
+
+	directory = hst to start with . if in current directory
+	path = server url, if all underlying file and folder should be browsable path/* * hast to be added
+*/
 func (r *Router) ServeFileSystem(path, directory string) {
 	triePath := "/" + strings.Trim(path, "/")
 	stripPrefix := strings.TrimSuffix(triePath, "*")
@@ -34,7 +44,11 @@ func (r *Router) ServeFileSystem(path, directory string) {
 	fs := http.FileServer(http.Dir(directory))
 	handler := http.StripPrefix(stripPrefix, fs)
 
-	r.route.Insert("GET", triePath, func(ctx models.Context) {
+	title := "GET"
+	logger.DebugWithStyle(title+" FS", triePath)
+
+	r.route.Insert(title, triePath, func(ctx models.Context) {
+		logger.DebugWithStyle(title+" FS", ctx.GetRequest().URL.Path)
 		handler.ServeHTTP(ctx.GetResponseWriter(), ctx.GetRequest())
 	})
 }
