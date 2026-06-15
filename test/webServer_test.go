@@ -26,7 +26,7 @@ func TestWebServer(t *testing.T) {
 
 	ws.SetLogLevel(log.DebugLevel)
 
-	ws.WebSocket("/ws", nil)
+	ws.NewWebSocket("/ws")
 
 	ws.Get("/test1", func(ctx models.Context) { ctx.RespondString("hello from test1") })
 	ws.Post("/test1", func(ctx models.Context) {

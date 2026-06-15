@@ -84,7 +84,8 @@ func (r *Router) Delete(path string, handler models.Handler) {
 	r.route.Insert(constants.METHOD_DELETE, utils.CleanPath(path), handler)
 }
 
-func (r *Router) WebSocket(path string, recieve func(data any)) {
+func (r *Router) NewWebSocket(path string) (client *models.WSClient) {
+	client = &models.WSClient{}
 	cleanPath := utils.CleanPath(path)
 
 	// Configure the Upgrader
@@ -134,8 +135,9 @@ func (r *Router) WebSocket(path string, recieve func(data any)) {
 			}
 
 			// received
-			if recieve != nil {
-				recieve(p)
+			if client != nil {
+				client.SetConnection(conn)
+				client.Recieve(p)
 			}
 
 			r.Broadcast(cleanPath, messageType, p, conn)
@@ -144,6 +146,8 @@ func (r *Router) WebSocket(path string, recieve func(data any)) {
 
 	logger.DebugWithStyle(constants.METHOD_WEBSOCKET, path)
 	r.route.Insert(constants.METHOD_GET, cleanPath, handler)
+
+	return
 }
 
 func (r *Router) Broadcast(path string, messageType int, data []byte, sender *websocket.Conn) {

@@ -67,8 +67,8 @@ func (s *WebServer) Delete(path string, handler models.Handler) {
 	s.router.Delete(path, handler)
 }
 
-func (s *WebServer) WebSocket(path string, reviece func(data any)) {
-	s.router.WebSocket(path, reviece)
+func (s *WebServer) NewWebSocket(path string) *models.WSClient {
+	return s.router.NewWebSocket(path)
 }
 
 func (s *WebServer) ListenHttp() error {
