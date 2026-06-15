@@ -55,6 +55,18 @@ func (s *WebServer) Post(path string, handler models.Handler) {
 	s.router.Post(path, handler)
 }
 
+func (s *WebServer) Put(path string, handler models.Handler) {
+	s.router.Put(path, handler)
+}
+
+func (s *WebServer) Update(path string, handler models.Handler) {
+	s.router.Update(path, handler)
+}
+
+func (s *WebServer) Delete(path string, handler models.Handler) {
+	s.router.Delete(path, handler)
+}
+
 func (s *WebServer) WebSocket(path string, reviece func(data any)) {
 	s.router.WebSocket(path, reviece)
 }
