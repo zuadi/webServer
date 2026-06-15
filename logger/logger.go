@@ -4,6 +4,7 @@ import (
 	"github.com/charmbracelet/lipgloss"
 	logger "github.com/charmbracelet/log"
 	"github.com/zuadi/webServer/color"
+	"github.com/zuadi/webServer/constants"
 )
 
 func InfoWithStyle(title, logEntry string) {
@@ -17,7 +18,7 @@ func WarningWithStyle(title, logEntry string) {
 }
 
 func ErrorWithStyle(title, logEntry string) {
-	setStyle("ERROR")
+	setStyle(constants.ERROR)
 	logger.Info(logEntry)
 }
 

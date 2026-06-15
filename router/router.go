@@ -6,6 +6,7 @@ import (
 	"sync"
 
 	"github.com/gorilla/websocket"
+	"github.com/zuadi/webServer/constants"
 	"github.com/zuadi/webServer/logger"
 	"github.com/zuadi/webServer/models"
 	"github.com/zuadi/webServer/utils"
@@ -22,11 +23,10 @@ func NewRouter() *Router {
 }
 
 func (r *Router) ServeFile(path, file string) {
-	title := "GET"
-	logger.DebugWithStyle(title+" File", path)
+	logger.DebugWithStyle(constants.METHOD_GET+" File", path)
 
-	r.route.Insert(title, path, func(ctx models.Context) {
-		logger.DebugWithStyle(title+" File", path)
+	r.route.Insert(constants.METHOD_GET, path, func(ctx models.Context) {
+		logger.DebugWithStyle(constants.METHOD_GET+" File", path)
 		http.ServeFile(ctx.GetResponseWriter(), ctx.GetRequest(), file)
 	})
 }
@@ -44,11 +44,10 @@ func (r *Router) ServeFileSystem(path, directory string) {
 	fs := http.FileServer(http.Dir(directory))
 	handler := http.StripPrefix(stripPrefix, fs)
 
-	title := "GET"
-	logger.DebugWithStyle(title+" FS", triePath)
+	logger.DebugWithStyle(constants.METHOD_GET+" "+constants.FILESYSTEM, triePath)
 
-	r.route.Insert(title, triePath, func(ctx models.Context) {
-		logger.DebugWithStyle(title+" FS", ctx.GetRequest().URL.Path)
+	r.route.Insert(constants.METHOD_GET, triePath, func(ctx models.Context) {
+		logger.DebugWithStyle(constants.METHOD_GET+" "+constants.FILESYSTEM, ctx.GetRequest().URL.Path)
 		handler.ServeHTTP(ctx.GetResponseWriter(), ctx.GetRequest())
 	})
 }
@@ -61,15 +60,28 @@ func (r *Router) Group(path string) *models.Group {
 }
 
 func (r *Router) Get(path string, handler models.Handler) {
-	title := "GET"
-	logger.DebugWithStyle(title, path)
-	r.route.Insert(title, utils.CleanPath(path), handler)
+	logger.DebugWithStyle(constants.METHOD_GET, path)
+	r.route.Insert(constants.METHOD_GET, utils.CleanPath(path), handler)
 }
 
 func (r *Router) Post(path string, handler models.Handler) {
-	title := "POST"
-	logger.DebugWithStyle(title, path)
-	r.route.Insert(title, utils.CleanPath(path), handler)
+	logger.DebugWithStyle(constants.METHOD_POST, path)
+	r.route.Insert(constants.METHOD_POST, utils.CleanPath(path), handler)
+}
+
+func (r *Router) Put(path string, handler models.Handler) {
+	logger.DebugWithStyle(constants.METHOD_PUT, path)
+	r.route.Insert(constants.METHOD_PUT, utils.CleanPath(path), handler)
+}
+
+func (r *Router) Update(path string, handler models.Handler) {
+	logger.DebugWithStyle(constants.METHOD_UPDATE, path)
+	r.route.Insert(constants.METHOD_UPDATE, utils.CleanPath(path), handler)
+}
+
+func (r *Router) Delete(path string, handler models.Handler) {
+	logger.DebugWithStyle(constants.METHOD_DELETE, path)
+	r.route.Insert(constants.METHOD_DELETE, utils.CleanPath(path), handler)
 }
 
 func (r *Router) WebSocket(path string, recieve func(data any)) {
@@ -99,7 +111,7 @@ func (r *Router) WebSocket(path string, recieve func(data any)) {
 		req := ctx.GetRequest()
 		conn, err := upgrader.Upgrade(w, req, nil)
 		if err != nil {
-			logger.ErrorWithStyle("WS ERROR", err.Error())
+			logger.ErrorWithStyle(constants.METHOD_WEBSOCKET+" "+constants.ERROR, err.Error())
 			return
 		}
 
@@ -110,14 +122,14 @@ func (r *Router) WebSocket(path string, recieve func(data any)) {
 			conn.Close()
 		}()
 
-		logger.DebugWithStyle("WS CONNECT", req.RemoteAddr)
+		logger.DebugWithStyle(constants.METHOD_WEBSOCKET+" "+constants.CONNECT, req.RemoteAddr)
 
 		// 2. The Event Loop (Keep the connection alive)
 		for {
 			// Read message from browser
 			messageType, p, err := conn.ReadMessage()
 			if err != nil {
-				logger.DebugWithStyle("WS DISCONNECT", err.Error())
+				logger.DebugWithStyle(constants.METHOD_WEBSOCKET+" "+constants.DISCONNECT, err.Error())
 				return
 			}
 
@@ -130,8 +142,8 @@ func (r *Router) WebSocket(path string, recieve func(data any)) {
 		}
 	}
 
-	logger.DebugWithStyle("WS", path)
-	r.route.Insert("GET", cleanPath, handler)
+	logger.DebugWithStyle(constants.METHOD_WEBSOCKET, path)
+	r.route.Insert(constants.METHOD_GET, cleanPath, handler)
 }
 
 func (r *Router) Broadcast(path string, messageType int, data []byte, sender *websocket.Conn) {
@@ -144,7 +156,7 @@ func (r *Router) Broadcast(path string, messageType int, data []byte, sender *we
 		// Write the message to this specific connection
 		err := conn.WriteMessage(messageType, data)
 		if err != nil {
-			logger.ErrorWithStyle("WS ERR", "failed to send to one client")
+			logger.ErrorWithStyle(constants.METHOD_WEBSOCKET+" "+constants.ERROR, "failed to send to one client")
 			conn.Close()
 			r.connections.Delete(conn)
 		}
@@ -168,8 +180,8 @@ func (r *Router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	w.Header().Set("Access-Control-Allow-Headers", r.cors.allowHeaders)
 	w.Header().Set("Access-Control-Allow-Private-Network", r.cors.allowPrivateNetwork)
 
-	if req.Method == "OPTIONS" {
-		logger.DebugWithStyle("OPTIONS", req.URL.Path)
+	if req.Method == constants.OPTIONS {
+		logger.DebugWithStyle(constants.OPTIONS, req.URL.Path)
 		w.WriteHeader(http.StatusOK)
 		return
 	}

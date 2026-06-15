@@ -1,30 +1,31 @@
 package color
 
-import "strings"
+import (
+	"strings"
 
-const (
-	GET       string = "#6415f7"
-	POST      string = "#56f8ba"
-	OPTION    string = "#56f8ba"
-	WEBSOCKET string = "#ff8800"
-	ERROR     string = "#ff0000"
-	ROUTER    string = "#042180"
+	"github.com/zuadi/webServer/constants"
 )
 
 func GetColor(name string) (s string) {
 	switch {
 	case strings.Contains(name, "GET"):
-		s = GET
+		s = constants.COLOR_GET
 	case strings.Contains(name, "POST"):
-		s = POST
+		s = constants.COLOR_POST
+	case strings.Contains(name, "PUT"):
+		s = constants.COLOR_PUT
+	case strings.Contains(name, "UPDATE"):
+		s = constants.COLOR_UPDATE
+	case strings.Contains(name, "DELETE"):
+		s = constants.COLOR_DELETE
 	case strings.Contains(name, "OPTION"):
-		s = OPTION
+		s = constants.COLOR_OPTION
 	case strings.Contains(name, "WEBSOCKET"), strings.Contains(name, "WS"):
-		s = WEBSOCKET
+		s = constants.COLOR_WEBSOCKET
 	case strings.Contains(name, "ERROR"), strings.Contains(name, "ERR"), name == "CORS":
-		s = ERROR
+		s = constants.COLOR_ERROR
 	case strings.Contains(name, "ROUTER"):
-		s = ROUTER
+		s = constants.COLOR_ROUTER
 	default:
 		s = "#f0f17b"
 	}
