@@ -71,6 +71,10 @@ func (s *WebServer) NewWebSocket(path string) *models.WSClient {
 	return s.router.NewWebSocket(path)
 }
 
+func (s *WebServer) NewBroker(path string, address string, brokerPort, wsPort int) (*models.Broker, error) {
+	return s.router.NewBroker(path, address, brokerPort, wsPort)
+}
+
 func (s *WebServer) ListenHttp() error {
 	s.router.CheckCors()
 	ln, err := net.Listen("tcp", fmt.Sprintf("%s:%d", s.ip, s.port))
