@@ -1,6 +1,9 @@
 package router
 
 import (
+	"encoding/json"
+	"fmt"
+	"io"
 	"net/http"
 	"strings"
 	"sync"
@@ -147,6 +150,63 @@ func (r *Router) NewWebSocket(path string) (client *models.WSClient) {
 	logger.DebugWithStyle(constants.METHOD_WEBSOCKET, path)
 	r.route.Insert(constants.METHOD_GET, cleanPath, handler)
 
+	return
+}
+
+func (r *Router) NewBroker(path string, address string, brokerPort, wsPort int) (b *models.Broker, err error) {
+	b = &models.Broker{}
+	cleanPath := utils.CleanPath(path)
+	fmt.Println(cleanPath)
+
+	b, err = models.NewBroker(address, brokerPort, wsPort)
+	if err != nil {
+		return
+	}
+
+	logger.DebugWithStyle(constants.METHOD_POST, path)
+
+	r.route.Insert(constants.METHOD_POST, cleanPath, func(ctx models.Context) {
+		r := ctx.GetRequest()
+		w := ctx.GetResponseWriter()
+
+		logger.DebugWithStyle(constants.METHOD_POST, path)
+		// Read and parse JSON data from the HTTP POST request
+		body, err := io.ReadAll(r.Body)
+		if err != nil {
+			http.Error(w, `{"status":"error","message":"invalid request body"}`, http.StatusBadRequest)
+			return
+		}
+		defer r.Body.Close()
+
+		var msg models.MQTTMessage
+
+		if err := json.Unmarshal(body, &msg); err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		if cookie, ok := r.Header["Cookie"]; ok {
+			msg.ID = utils.GetCookie(cookie, "client_uuid")
+		}
+
+		msg.RemoteAddress = r.RemoteAddr
+
+		if err := b.Publish(strings.TrimLeft(r.URL.Path, path+"/"), msg.Payload); err != nil {
+			http.Error(w, `{"status":"error","message":"`+err.Error()+`"}`, http.StatusBadRequest)
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte(`{"status":"success","message":"broadcasted to mqtt loop"}`))
+	})
+
+	subPath := strings.Replace(path, "*", "", 1) + "/sub"
+
+	logger.DebugWithStyle(constants.METHOD_POST, subPath)
+	r.route.Insert(constants.METHOD_GET, cleanPath+"/sub", func(ctx models.Context) {
+		logger.DebugWithStyle(constants.METHOD_POST, subPath)
+		b.ServeWS(ctx.GetResponseWriter(), ctx.GetRequest())
+	})
 	return
 }
 
