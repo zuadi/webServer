@@ -1,3 +1,3 @@
 package models
 
-type Handler func(ctx Context)
+type HandlerFunc func(ctx Context)

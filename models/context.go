@@ -14,6 +14,7 @@ type Context struct {
 func (c *Context) SetRequest(r *http.Request) {
 	c.request = r
 }
+
 func (c *Context) SetResponseWriter(w http.ResponseWriter) {
 	c.response = w
 }
