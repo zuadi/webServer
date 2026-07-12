@@ -128,7 +128,12 @@ func (r *Router) NewWebSocket(path string) (client *models.WSClient) {
 
 		logger.DebugWithStyle(constants.METHOD_WEBSOCKET+" "+constants.CONNECT, req.RemoteAddr)
 
-		// 2. The Event Loop (Keep the connection alive)
+		// 2. Send broadcast message
+		client.Send = func(messageType models.MessageType, data []byte) {
+			r.Broadcast(cleanPath, int(messageType), data, nil)
+		}
+
+		// 3. The Event Loop (Keep the connection alive)
 		for {
 			// Read message from browser
 			messageType, p, err := conn.ReadMessage()
@@ -153,6 +158,7 @@ func (r *Router) NewWebSocket(path string) (client *models.WSClient) {
 	return
 }
 
+// NewBroker is initiating a new mqtt broker
 func (r *Router) NewBroker(path string, address string, brokerPort, wsPort int) (b *models.Broker, err error) {
 	b = &models.Broker{}
 	cleanPath := utils.CleanPath(path)
