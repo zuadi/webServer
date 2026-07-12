@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/charmbracelet/log"
+	"github.com/gorilla/websocket"
 	"github.com/zuadi/webServer"
 	"github.com/zuadi/webServer/models"
 )
@@ -168,6 +169,67 @@ func TestWebServerMiddlewareLifecycle(t *testing.T) {
 
 		if string(body) != "good middleware" {
 			t.Errorf("Middleware failed to pass frame down pipeline, returned: '%s'", string(body))
+		}
+	})
+}
+
+func TestWebServerWebSocket(t *testing.T) {
+	ws := webServer.NewWebServer("127.0.0.1", 4043)
+	ws.SetLogLevel(log.DebugLevel)
+
+	ws.Get("/ws", func(ctx models.Context) {
+		upgrader := websocket.Upgrader{
+			CheckOrigin: func(r *http.Request) bool { return true },
+		}
+
+		// Upgrade the HTTP server connection to the WebSocket protocol
+		// NOTE: Replace .Writer() and .Request() with your framework's actual getter methods
+		conn, err := upgrader.Upgrade(ctx.GetResponseWriter(), ctx.GetRequest(), nil)
+		if err != nil {
+			log.Errorf("Upgrade failed: %v", err)
+			return
+		}
+		defer conn.Close()
+
+		// Core echo loop
+		for {
+			mt, message, err := conn.ReadMessage()
+			if err != nil {
+				break // connection closed by client or error
+			}
+			// Echo the exact message back
+			if err := conn.WriteMessage(mt, message); err != nil {
+				break
+			}
+		}
+	})
+
+	go func() {
+		_ = ws.ListenHttp()
+	}()
+	time.Sleep(50 * time.Millisecond)
+
+	t.Run("WebSocket Echo Connection", func(t *testing.T) {
+		u := "ws://127.0.0.1:4043/ws"
+		dialer := websocket.DefaultDialer
+		conn, _, err := dialer.Dial(u, nil)
+		if err != nil {
+			t.Fatalf("Handshake failed: %v", err)
+		}
+		defer conn.Close()
+
+		input := []byte("ping")
+		if err := conn.WriteMessage(websocket.TextMessage, input); err != nil {
+			t.Fatalf("Failed to write message: %v", err)
+		}
+
+		_, message, err := conn.ReadMessage()
+		if err != nil {
+			t.Fatalf("Failed to read message: %v", err)
+		}
+
+		if string(message) != "ping" {
+			t.Errorf("Expected 'ping', got '%s'", string(message))
 		}
 	})
 }
