@@ -7,8 +7,9 @@ import (
 )
 
 type WSClient struct {
-	recieve func(data any)
-	conn    *websocket.Conn
+	recieve       func(data any)
+	conn          *websocket.Conn
+	NewConnection func(ws *WSClient)
 }
 
 func (ws *WSClient) SetConnection(conn *websocket.Conn) {
@@ -34,4 +35,11 @@ func (ws *WSClient) Answer(messageType int, data []byte) {
 		logger.ErrorWithStyle(constants.METHOD_WEBSOCKET+" "+constants.ERROR, "failed to send to one client")
 		ws.conn.Close()
 	}
+}
+
+func (ws *WSClient) NewConn(conn *websocket.Conn) {
+	if conn == nil || ws.NewConnection == nil {
+		return
+	}
+	ws.NewConnection(&WSClient{conn: conn})
 }
