@@ -268,24 +268,19 @@ func TestWebServer(t *testing.T) {
 	g2 := g.NewGroup("v1")
 	g2.Get("/:id/23/hallo", func(ctx models.Context) { ctx.RespondString("Hjh") })
 
-	// Start server asynchronously
-	go func() {
-		if err := ws.ListenHttp(); err != nil && err != http.ErrServerClosed {
-			t.Errorf("Server error: %v", err)
-		}
-	}()
-
-	go func() {
-		_ = ws.ListenHttp()
-	}()
-	time.Sleep(50 * time.Millisecond)
-
 	webocket := g.NewWebSocket("ws")
 
 	webocket.NewConnection = func(ws *models.WSClient) {
 		fmt.Println(1, "New conection")
 		ws.Answer(1, []byte("Hello WebSocket"))
 	}
+
+	// Start server asynchronously
+	go func() {
+		if err := ws.ListenHttp(); err != nil && err != http.ErrServerClosed {
+			t.Errorf("Server error: %v", err)
+		}
+	}()
 
 	// Allow server time to bind to the port
 	time.Sleep(100 * time.Millisecond)
