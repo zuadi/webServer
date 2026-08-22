@@ -1,16 +1,12 @@
 package router
 
-import "github.com/zuadi/webServer/logger"
-
-type CORSMiddleware struct {
-	allowOrigins        string
-	allowMethods        string
-	allowHeaders        string
-	allowPrivateNetwork string
-}
+import (
+	"github.com/zuadi/webServer/logger"
+	"github.com/zuadi/webServer/models"
+)
 
 func (r *Router) CheckCors() {
-	if r.cors != nil {
+	if r.route.Cors != nil {
 		return
 	}
 	r.DefaultCORS()
@@ -18,14 +14,9 @@ func (r *Router) CheckCors() {
 
 func (r *Router) DefaultCORS() {
 	logger.InfoWithStyle("CORS", "default CORS active please set for production")
-	r.cors = &CORSMiddleware{
-		allowOrigins:        "*",
-		allowMethods:        "POST, GET, OPTIONS, PUT, DELETE",
-		allowHeaders:        "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization",
-		allowPrivateNetwork: "true",
-	}
+	r.route.Cors = models.DefaultCORS()
 }
 
-func (r *Router) CORSMiddleware(cors CORSMiddleware) {
-	r.cors = &cors
+func (r *Router) CORSMiddleware(cors models.CORSMiddleware) {
+	r.route.Cors = &cors
 }
