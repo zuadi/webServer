@@ -24,31 +24,31 @@ func (g *Group) NewGroup(path string) *Group {
 	}
 }
 
-func (g *Group) Get(path string, handler Handler) {
+func (g *Group) Get(path string, handler HandlerFunc) {
 	path = utils.CleanPath(g.Path) + utils.CleanPath(path)
 	logger.DebugWithStyle(constants.METHOD_GET, path)
 	g.Route.Insert(constants.METHOD_GET, path, handler)
 }
 
-func (g *Group) Post(path string, handler Handler) {
+func (g *Group) Post(path string, handler HandlerFunc) {
 	path = utils.CleanPath(g.Path) + utils.CleanPath(path)
 	logger.DebugWithStyle(constants.METHOD_POST, path)
 	g.Route.Insert(constants.METHOD_POST, path, handler)
 }
 
-func (g *Group) Put(path string, handler Handler) {
+func (g *Group) Put(path string, handler HandlerFunc) {
 	path = utils.CleanPath(g.Path) + utils.CleanPath(path)
 	logger.DebugWithStyle(constants.METHOD_PUT, path)
 	g.Route.Insert(constants.METHOD_PUT, path, handler)
 }
 
-func (g *Group) Update(path string, handler Handler) {
+func (g *Group) Update(path string, handler HandlerFunc) {
 	path = utils.CleanPath(g.Path) + utils.CleanPath(path)
 	logger.DebugWithStyle(constants.METHOD_UPDATE, path)
 	g.Route.Insert(constants.METHOD_UPDATE, path, handler)
 }
 
-func (g *Group) Delete(path string, handler Handler) {
+func (g *Group) Delete(path string, handler HandlerFunc) {
 	path = utils.CleanPath(g.Path) + utils.CleanPath(path)
 	logger.DebugWithStyle(constants.METHOD_DELETE, path)
 	g.Route.Insert(constants.METHOD_DELETE, path, handler)

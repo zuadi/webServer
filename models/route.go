@@ -7,16 +7,16 @@ import (
 
 type Route struct {
 	Cors        *CORSMiddleware
-	path        string             // The segment of the URL stored in this node
-	children    []*Route           // Child nodes
-	handlers    map[string]Handler // method -> handler (e.g., "GET" -> func)
-	isParam     bool               // Flag for :id style segments
+	path        string                 // The segment of the URL stored in this node
+	children    []*Route               // Child nodes
+	handlers    map[string]HandlerFunc // method -> handler (e.g., "GET" -> func)
+	isParam     bool                   // Flag for :id style segments
 	isWildcard  bool
 	paramName   string // Stores "id" if the path was ":id"
 	Connections sync.Map
 }
 
-func (n *Route) Insert(method, path string, handler Handler) {
+func (n *Route) Insert(method, path string, handler HandlerFunc) {
 	path = strings.Trim(path, "/")
 	segments := []string{}
 	if path != "" {
@@ -44,7 +44,7 @@ func (n *Route) Insert(method, path string, handler Handler) {
 				path:       seg,
 				isParam:    isParam,
 				isWildcard: isWildcard, // <--- Set flag
-				handlers:   make(map[string]Handler),
+				handlers:   make(map[string]HandlerFunc),
 			}
 			if isParam {
 				next.paramName = seg[1:] // strip the ":"
@@ -61,13 +61,13 @@ func (n *Route) Insert(method, path string, handler Handler) {
 	}
 
 	if curr.handlers == nil {
-		curr.handlers = make(map[string]Handler)
+		curr.handlers = make(map[string]HandlerFunc)
 	}
 
 	curr.handlers[method] = handler
 }
 
-func (n *Route) Search(method, path string) (bool, Handler, map[string]string) {
+func (n *Route) Search(method, path string) (bool, HandlerFunc, map[string]string) {
 	path = strings.Trim(path, "/")
 	segments := []string{}
 	if path != "" {

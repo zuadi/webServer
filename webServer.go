@@ -47,23 +47,23 @@ func (s *WebServer) NewGroup(path string) *models.Group {
 	return s.router.NewGroup(path)
 }
 
-func (s *WebServer) Get(path string, handler models.Handler) {
+func (s *WebServer) Get(path string, handler models.HandlerFunc) {
 	s.router.Get(path, handler)
 }
 
-func (s *WebServer) Post(path string, handler models.Handler) {
+func (s *WebServer) Post(path string, handler models.HandlerFunc) {
 	s.router.Post(path, handler)
 }
 
-func (s *WebServer) Put(path string, handler models.Handler) {
+func (s *WebServer) Put(path string, handler models.HandlerFunc) {
 	s.router.Put(path, handler)
 }
 
-func (s *WebServer) Update(path string, handler models.Handler) {
+func (s *WebServer) Update(path string, handler models.HandlerFunc) {
 	s.router.Update(path, handler)
 }
 
-func (s *WebServer) Delete(path string, handler models.Handler) {
+func (s *WebServer) Delete(path string, handler models.HandlerFunc) {
 	s.router.Delete(path, handler)
 }
 

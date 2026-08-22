@@ -59,27 +59,27 @@ func (r *Router) NewGroup(path string) *models.Group {
 	}
 }
 
-func (r *Router) Get(path string, handler models.Handler) {
+func (r *Router) Get(path string, handler models.HandlerFunc) {
 	logger.DebugWithStyle(constants.METHOD_GET, path)
 	r.route.Insert(constants.METHOD_GET, utils.CleanPath(path), handler)
 }
 
-func (r *Router) Post(path string, handler models.Handler) {
+func (r *Router) Post(path string, handler models.HandlerFunc) {
 	logger.DebugWithStyle(constants.METHOD_POST, path)
 	r.route.Insert(constants.METHOD_POST, utils.CleanPath(path), handler)
 }
 
-func (r *Router) Put(path string, handler models.Handler) {
+func (r *Router) Put(path string, handler models.HandlerFunc) {
 	logger.DebugWithStyle(constants.METHOD_PUT, path)
 	r.route.Insert(constants.METHOD_PUT, utils.CleanPath(path), handler)
 }
 
-func (r *Router) Update(path string, handler models.Handler) {
+func (r *Router) Update(path string, handler models.HandlerFunc) {
 	logger.DebugWithStyle(constants.METHOD_UPDATE, path)
 	r.route.Insert(constants.METHOD_UPDATE, utils.CleanPath(path), handler)
 }
 
-func (r *Router) Delete(path string, handler models.Handler) {
+func (r *Router) Delete(path string, handler models.HandlerFunc) {
 	logger.DebugWithStyle(constants.METHOD_DELETE, path)
 	r.route.Insert(constants.METHOD_DELETE, utils.CleanPath(path), handler)
 }
@@ -128,7 +128,12 @@ func (r *Router) NewWebSocket(path string) (client *models.WSClient) {
 		// call function for example sending initial data
 		client.NewConn(conn)
 
-		// 2. The Event Loop (Keep the connection alive)
+		// 2. Send broadcast message
+		client.Send = func(messageType models.MessageType, data []byte) {
+			r.Broadcast(cleanPath, int(messageType), data, nil)
+		}
+
+		// 3. The Event Loop (Keep the connection alive)
 		for {
 			// Read message from browser
 			messageType, p, err := conn.ReadMessage()
@@ -153,6 +158,7 @@ func (r *Router) NewWebSocket(path string) (client *models.WSClient) {
 	return
 }
 
+// NewBroker is initiating a new mqtt broker
 func (r *Router) NewBroker(path string, address string, brokerPort, wsPort int) (b *models.Broker, err error) {
 	b = &models.Broker{}
 	cleanPath := utils.CleanPath(path)
