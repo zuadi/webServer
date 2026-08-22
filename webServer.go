@@ -43,8 +43,8 @@ func (s *WebServer) ServeFileSystem(path, file string) {
 	s.router.ServeFileSystem(path, file)
 }
 
-func (s *WebServer) Group(path string) *models.Group {
-	return s.router.Group(path)
+func (s *WebServer) NewGroup(path string) *models.Group {
+	return s.router.NewGroup(path)
 }
 
 func (s *WebServer) Get(path string, handler models.Handler) {

@@ -6,7 +6,6 @@ import (
 	"io"
 	"net/http"
 	"strings"
-	"sync"
 
 	"github.com/gorilla/websocket"
 	"github.com/zuadi/webServer/constants"
@@ -16,9 +15,7 @@ import (
 )
 
 type Router struct {
-	route       models.Route
-	cors        *CORSMiddleware
-	connections sync.Map
+	route models.Route
 }
 
 func NewRouter() *Router {
@@ -55,7 +52,7 @@ func (r *Router) ServeFileSystem(path, directory string) {
 	})
 }
 
-func (r *Router) Group(path string) *models.Group {
+func (r *Router) NewGroup(path string) *models.Group {
 	return &models.Group{
 		Path:  utils.CleanPath(path),
 		Route: &r.route,
@@ -98,7 +95,7 @@ func (r *Router) NewWebSocket(path string) (client *models.WSClient) {
 		// CRITICAL: CheckOrigin allows your frontend (like localhost:3000)
 		// to connect. For testing, we return true.
 		CheckOrigin: func(req *http.Request) bool {
-			for allowOrigin := range strings.SplitSeq(r.cors.allowOrigins, ",") {
+			for allowOrigin := range strings.SplitSeq(r.route.Cors.AllowOrigins, ",") {
 				allowOrigin = strings.TrimSpace(allowOrigin)
 
 				if allowOrigin == "*" || allowOrigin == req.Header.Get("Origin") {
@@ -119,14 +116,17 @@ func (r *Router) NewWebSocket(path string) (client *models.WSClient) {
 			return
 		}
 
-		r.connections.Store(conn, true)
+		r.route.Connections.Store(conn, true)
 
 		defer func() {
-			r.connections.Delete(conn)
+			r.route.Connections.Delete(conn)
 			conn.Close()
 		}()
 
 		logger.DebugWithStyle(constants.METHOD_WEBSOCKET+" "+constants.CONNECT, req.RemoteAddr)
+
+		// call function for example sending initial data
+		client.NewConn(conn)
 
 		// 2. The Event Loop (Keep the connection alive)
 		for {
@@ -211,7 +211,7 @@ func (r *Router) NewBroker(path string, address string, brokerPort, wsPort int) 
 }
 
 func (r *Router) Broadcast(path string, messageType int, data []byte, sender *websocket.Conn) {
-	r.connections.Range(func(key, value any) bool {
+	r.route.Connections.Range(func(key, value any) bool {
 		conn := key.(*websocket.Conn)
 
 		if conn == sender {
@@ -222,7 +222,7 @@ func (r *Router) Broadcast(path string, messageType int, data []byte, sender *we
 		if err != nil {
 			logger.ErrorWithStyle(constants.METHOD_WEBSOCKET+" "+constants.ERROR, "failed to send to one client")
 			conn.Close()
-			r.connections.Delete(conn)
+			r.route.Connections.Delete(conn)
 		}
 		return true // Continue to next connection
 	})
@@ -231,7 +231,7 @@ func (r *Router) Broadcast(path string, messageType int, data []byte, sender *we
 func (r *Router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	origin := req.Header.Get("Origin")
 
-	for allowOrigin := range strings.SplitSeq(r.cors.allowOrigins, ",") {
+	for allowOrigin := range strings.SplitSeq(r.route.Cors.AllowOrigins, ",") {
 		allowOrigin = strings.TrimSpace(allowOrigin)
 
 		if allowOrigin == "*" || allowOrigin == origin {
@@ -240,9 +240,9 @@ func (r *Router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		}
 	}
 
-	w.Header().Set("Access-Control-Allow-Methods", r.cors.allowMethods)
-	w.Header().Set("Access-Control-Allow-Headers", r.cors.allowHeaders)
-	w.Header().Set("Access-Control-Allow-Private-Network", r.cors.allowPrivateNetwork)
+	w.Header().Set("Access-Control-Allow-Methods", r.route.Cors.AllowMethods)
+	w.Header().Set("Access-Control-Allow-Headers", r.route.Cors.AllowHeaders)
+	w.Header().Set("Access-Control-Allow-Private-Network", r.route.Cors.AllowPrivateNetwork)
 
 	if req.Method == constants.OPTIONS {
 		logger.DebugWithStyle(constants.OPTIONS, req.URL.Path)

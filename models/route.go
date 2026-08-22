@@ -2,15 +2,18 @@ package models
 
 import (
 	"strings"
+	"sync"
 )
 
 type Route struct {
-	path       string             // The segment of the URL stored in this node
-	children   []*Route           // Child nodes
-	handlers   map[string]Handler // method -> handler (e.g., "GET" -> func)
-	isParam    bool               // Flag for :id style segments
-	isWildcard bool
-	paramName  string // Stores "id" if the path was ":id"
+	Cors        *CORSMiddleware
+	path        string             // The segment of the URL stored in this node
+	children    []*Route           // Child nodes
+	handlers    map[string]Handler // method -> handler (e.g., "GET" -> func)
+	isParam     bool               // Flag for :id style segments
+	isWildcard  bool
+	paramName   string // Stores "id" if the path was ":id"
+	Connections sync.Map
 }
 
 func (n *Route) Insert(method, path string, handler Handler) {
