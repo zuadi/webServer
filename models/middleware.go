@@ -6,7 +6,7 @@ import (
 )
 
 // Middleware defines our custom middleware constructor signature
-type Middleware func(HandlerFunc) HandlerFunc
+type Middleware func(next HandlerFunc) HandlerFunc
 
 // LoggingMiddleware is an example of a custom middleware
 func LoggingMiddleware(next HandlerFunc) HandlerFunc {
@@ -21,6 +21,46 @@ func LoggingMiddleware(next HandlerFunc) HandlerFunc {
 
 		// 3. Post-execution logic
 		log.Printf("Completed in %v", time.Since(start))
+	}
+}
+
+// BearerAuthMiddleware validates incoming Authorization: Bearer <token> headers.
+// It accepts a validator function so you can inject custom JWT or database token checks.
+func BearerAuthMiddleware(validateToken func(token string) bool) Middleware {
+	return func(next HandlerFunc) HandlerFunc {
+		return func(ctx Context) {
+			req := ctx.GetRequest()
+			w := ctx.GetResponseWriter()
+
+			// 1. Fetch Authorization header
+			authHeader := req.Header.Get("Authorization")
+			if authHeader == "" {
+				http.Error(w, `{"error":"authorization header required"}`, http.StatusUnauthorized)
+				return // Abort middleware chain
+			}
+
+			// 2. Verify "Bearer " prefix and trim it
+			token, found := strings.CutPrefix(authHeader, "Bearer ")
+			if !found {
+				http.Error(w, `{"error":"authorization header must start with Bearer"}`, http.StatusUnauthorized)
+				return // Abort middleware chain
+			}
+
+			token = strings.TrimSpace(token)
+			if token == "" {
+				http.Error(w, `{"error":"bearer token cannot be empty"}`, http.StatusUnauthorized)
+				return // Abort middleware chain
+			}
+
+			// 3. Validate token against business logic
+			if !validateToken(token) {
+				http.Error(w, `{"error":"invalid or expired token"}`, http.StatusUnauthorized)
+				return // Abort middleware chain
+			}
+
+			// 4. Token valid -> Proceed down the chain to the endpoint handler
+			next(ctx)
+		}
 	}
 }
 

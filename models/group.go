@@ -15,43 +15,59 @@ import (
 type Group struct {
 	Path  string
 	Route *Route
+	middlewares []Middleware
 }
 
 func (g *Group) NewGroup(path string) *Group {
+	parentMWs := make([]Middleware, len(g.middlewares))
+	copy(parentMWs, g.middlewares)
+
 	return &Group{
 		Path:  utils.CleanPath(g.Path) + utils.CleanPath(path),
 		Route: g.Route,
+		middlewares: parentMWs,
 	}
+}
+
+// AddMiddleware registers middleware specifically for this group
+func (g *Group) AddMiddleware(mw ...Middleware) *Group {
+	g.middlewares = append(g.middlewares, mw...)
+	return g // Allows method chaining
 }
 
 func (g *Group) Get(path string, handler HandlerFunc) {
 	path = utils.CleanPath(g.Path) + utils.CleanPath(path)
 	logger.DebugWithStyle(constants.METHOD_GET, path)
-	g.Route.Insert(constants.METHOD_GET, path, handler)
+	chainedHandler := g.chain(handler)
+	g.Route.Insert(constants.METHOD_GET, path, chainedHandler)
 }
 
 func (g *Group) Post(path string, handler HandlerFunc) {
 	path = utils.CleanPath(g.Path) + utils.CleanPath(path)
 	logger.DebugWithStyle(constants.METHOD_POST, path)
-	g.Route.Insert(constants.METHOD_POST, path, handler)
+	chainedHandler := g.chain(handler)
+	g.Route.Insert(constants.METHOD_POST, path, chainedHandler)
 }
 
 func (g *Group) Put(path string, handler HandlerFunc) {
 	path = utils.CleanPath(g.Path) + utils.CleanPath(path)
 	logger.DebugWithStyle(constants.METHOD_PUT, path)
-	g.Route.Insert(constants.METHOD_PUT, path, handler)
+	chainedHandler := g.chain(handler)
+	g.Route.Insert(constants.METHOD_PUT, path, chainedHandler)
 }
 
 func (g *Group) Update(path string, handler HandlerFunc) {
 	path = utils.CleanPath(g.Path) + utils.CleanPath(path)
 	logger.DebugWithStyle(constants.METHOD_UPDATE, path)
-	g.Route.Insert(constants.METHOD_UPDATE, path, handler)
+	chainedHandler := g.chain(handler)
+	g.Route.Insert(constants.METHOD_UPDATE, path, chainedHandler)
 }
 
 func (g *Group) Delete(path string, handler HandlerFunc) {
 	path = utils.CleanPath(g.Path) + utils.CleanPath(path)
 	logger.DebugWithStyle(constants.METHOD_DELETE, path)
-	g.Route.Insert(constants.METHOD_DELETE, path, handler)
+	chainedHandler := g.chain(handler)
+	g.Route.Insert(constants.METHOD_DELETE, path, chainedHandler)
 }
 
 // ServeFile serves a single static file under this group's path prefix
@@ -221,4 +237,9 @@ func (g *Group) Broadcast(path string, messageType int, data []byte, sender *web
 		}
 		return true // Continue to next connection
 	})
+}
+
+// chain wraps the handler with all group middlewares in reverse order
+func (g *Group) chain(handler HandlerFunc) HandlerFunc {
+	return Chain(handler, g.middlewares)
 }
