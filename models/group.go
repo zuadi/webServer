@@ -13,8 +13,8 @@ import (
 )
 
 type Group struct {
-	Path  string
-	Route *Route
+	Path        string
+	Route       *Route
 	middlewares []Middleware
 }
 
@@ -23,8 +23,8 @@ func (g *Group) NewGroup(path string) *Group {
 	copy(parentMWs, g.middlewares)
 
 	return &Group{
-		Path:  utils.CleanPath(g.Path) + utils.CleanPath(path),
-		Route: g.Route,
+		Path:        utils.CleanPath(g.Path) + utils.CleanPath(path),
+		Route:       g.Route,
 		middlewares: parentMWs,
 	}
 }
@@ -241,5 +241,5 @@ func (g *Group) Broadcast(path string, messageType int, data []byte, sender *web
 
 // chain wraps the handler with all group middlewares in reverse order
 func (g *Group) chain(handler HandlerFunc) HandlerFunc {
-	return Chain(handler, g.middlewares)
+	return Chain(handler, g.middlewares...)
 }
